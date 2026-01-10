@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Form, Button, Alert, Card } from 'react-bootstrap';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Alert,
+  Card,
+} from "react-bootstrap";
 
 const ADMIN_CREDENTIALS = {
-  name: 'sasiraja',
-  phone: '1234567890',
-  email: 'sari@gmail.com',
-  place: 'chennai',
-  country: 'india'
+  name: "Sreesoftwares",
+  phone: "9500941142",
+  email: "sreesoftwares5@gmail.com",
+  place: "chennai",
+  country: "india",
 };
+
+const WHATSAPP_NUMBER = "9500941142";
 
 const ContactForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', place: '', country: ''
+    name: "",
+    phone: "",
+    email: "",
+    place: "",
+    country: "",
   });
-  const [status, setStatus] = useState({ type: '', message: '' });
+  const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -25,28 +39,86 @@ const ContactForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     // Add new user to local storage
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-    const newUser = { ...formData, id: Date.now(), timestamp: new Date().toLocaleString() };
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const newUser = {
+      ...formData,
+      id: Date.now(),
+      timestamp: new Date().toLocaleString(),
+    };
     users.unshift(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem("users", JSON.stringify(users));
 
     // Check if admin login
-    if (formData.name === ADMIN_CREDENTIALS.name && 
-        formData.phone === ADMIN_CREDENTIALS.phone) {
+    if (
+      formData.name === ADMIN_CREDENTIALS.name &&
+      formData.phone === ADMIN_CREDENTIALS.phone
+    ) {
       setTimeout(() => {
-        setStatus({ type: 'success', message: 'Admin login successful! Redirecting...' });
-        setTimeout(() => navigate('/admin-dashboard'), 1500);
+        setStatus({
+          type: "success",
+          message: "Admin login successful! Redirecting...",
+        });
+        setTimeout(() => navigate("/admin-dashboard"), 1500);
       }, 1000);
     } else {
+      // **WHATSAPP REDIRECT**
+      const whatsappMessage = `I'm interested in the 2026 offer. How do I enroll?`;
+
+      const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+        whatsappMessage
+      )}`;
+
       setTimeout(() => {
-        setStatus({ type: 'success', message: 'Registration successful! Admin will contact you.' });
-        setFormData({ name: '', phone: '', email: '', place: '', country: '' });
-        setLoading(false);
-      }, 1500);
+        setStatus({
+          type: "success",
+          message: `Registration successful!`,
+        });
+        setTimeout(() => {
+          window.open(whatsappURL, "_blank");
+          setLoading(false);
+        }, 1500);
+      }, 1000);
     }
   };
+
+  //   const navigate = useNavigate();
+  //   const [formData, setFormData] = useState({
+  //     name: '', phone: '', email: '', place: '', country: ''
+  //   });
+  //   const [status, setStatus] = useState({ type: '', message: '' });
+  //   const [loading, setLoading] = useState(false);
+
+  //   const handleChange = (e) => {
+  //     setFormData({ ...formData, [e.target.name]: e.target.value });
+  //   };
+
+  //   const handleSubmit = async (e) => {
+  //     e.preventDefault();
+  //     setLoading(true);
+
+  //     // Add new user to local storage
+  //     const users = JSON.parse(localStorage.getItem('users')) || [];
+  //     const newUser = { ...formData, id: Date.now(), timestamp: new Date().toLocaleString() };
+  //     users.unshift(newUser);
+  //     localStorage.setItem('users', JSON.stringify(users));
+
+  //     // Check if admin login
+  //     if (formData.name === ADMIN_CREDENTIALS.name &&
+  //         formData.phone === ADMIN_CREDENTIALS.phone) {
+  //       setTimeout(() => {
+  //         setStatus({ type: 'success', message: 'Admin login successful! Redirecting...' });
+  //         setTimeout(() => navigate('/admin-dashboard'), 1500);
+  //       }, 1000);
+  //     } else {
+  //       setTimeout(() => {
+  //         setStatus({ type: 'success', message: 'Registration successful! Admin will contact you.' });
+  //         setFormData({ name: '', phone: '', email: '', place: '', country: '' });
+  //         setLoading(false);
+  //       }, 1500);
+  //     }
+  //   };
 
   return (
     <div className="min-vh-100 bg-gradient-form">
@@ -61,23 +133,31 @@ const ContactForm = () => {
                 <div className="position-relative">
                   <i className="bi bi-person-plus-fill fs-1 mb-3 d-block"></i>
                   <h2 className="mb-1 fw-bold lh-1">Register Form</h2>
-                  <p className="mb-0 opacity-90">Fill the all details to register</p>
+                  <p className="mb-0 opacity-90">
+                    Fill the all details to register
+                  </p>
                 </div>
               </Card.Header>
 
               <Card.Body className="p-4 p-md-5">
                 {/* Status Alert */}
                 {status.message && (
-                  <Alert 
-                    variant={status.type === 'success' ? 'success' : 'danger'} 
+                  <Alert
+                    variant={status.type === "success" ? "success" : "danger"}
                     className={`border-0 rounded-3 shadow-sm mb-4 status-alert ${
-                      status.type === 'success' ? 'bg-success-gradient' : 'bg-danger-gradient'
+                      status.type === "success"
+                        ? "bg-success-gradient"
+                        : "bg-danger-gradient"
                     }`}
                   >
                     <div className="d-flex align-items-center">
-                      <i className={`bi bi-check-circle-fill fs-4 me-3 ${
-                        status.type === 'success' ? 'text-white' : 'text-white'
-                      }`}></i>
+                      <i
+                        className={`bi bi-check-circle-fill fs-4 me-3 ${
+                          status.type === "success"
+                            ? "text-white"
+                            : "text-white"
+                        }`}
+                      ></i>
                       <div>
                         <strong>{status.message}</strong>
                       </div>
@@ -89,15 +169,16 @@ const ContactForm = () => {
                   {/* Name Field */}
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-bold text-dark fs-6 mb-2">
-                      <i className="bi bi-person-fill me-2 text-primary"></i>Name *
+                      <i className="bi bi-person-fill me-2 text-primary"></i>
+                      Name *
                     </Form.Label>
                     <div className="position-relative">
-                      <Form.Control 
-                        type="text" 
-                        name="name" 
+                      <Form.Control
+                        type="text"
+                        name="name"
                         value={formData.name}
-                        onChange={handleChange} 
-                        required 
+                        onChange={handleChange}
+                        required
                         className="form-control-modern"
                         placeholder="Enter your full name"
                       />
@@ -108,15 +189,16 @@ const ContactForm = () => {
                   {/* Phone Field */}
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-bold text-dark fs-6 mb-2">
-                      <i className="bi bi-telephone-fill me-2 text-primary"></i>Phone *
+                      <i className="bi bi-telephone-fill me-2 text-primary"></i>
+                      Phone *
                     </Form.Label>
                     <div className="position-relative">
-                      <Form.Control 
-                        type="tel" 
-                        name="phone" 
+                      <Form.Control
+                        type="tel"
+                        name="phone"
                         value={formData.phone}
-                        onChange={handleChange} 
-                        required 
+                        onChange={handleChange}
+                        required
                         className="form-control-modern"
                         placeholder="1234567890"
                       />
@@ -127,15 +209,16 @@ const ContactForm = () => {
                   {/* Email Field */}
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-bold text-dark fs-6 mb-2">
-                      <i className="bi bi-envelope-fill me-2 text-primary"></i>Email *
+                      <i className="bi bi-envelope-fill me-2 text-primary"></i>
+                      Email *
                     </Form.Label>
                     <div className="position-relative">
-                      <Form.Control 
-                        type="email" 
-                        name="email" 
+                      <Form.Control
+                        type="email"
+                        name="email"
                         value={formData.email}
-                        onChange={handleChange} 
-                        required 
+                        onChange={handleChange}
+                        required
                         className="form-control-modern"
                         placeholder="your@email.com"
                       />
@@ -146,15 +229,16 @@ const ContactForm = () => {
                   {/* Place Field */}
                   <Form.Group className="mb-4">
                     <Form.Label className="fw-bold text-dark fs-6 mb-2">
-                      <i className="bi bi-geo-alt-fill me-2 text-primary"></i>Place *
+                      <i className="bi bi-geo-alt-fill me-2 text-primary"></i>
+                      Place *
                     </Form.Label>
                     <div className="position-relative">
-                      <Form.Control 
-                        type="text" 
-                        name="place" 
+                      <Form.Control
+                        type="text"
+                        name="place"
                         value={formData.place}
-                        onChange={handleChange} 
-                        required 
+                        onChange={handleChange}
+                        required
                         className="form-control-modern"
                         placeholder="City/Area"
                       />
@@ -168,12 +252,12 @@ const ContactForm = () => {
                       <i className="bi bi-globe me-2 text-primary"></i>Country *
                     </Form.Label>
                     <div className="position-relative">
-                      <Form.Control 
-                        type="text" 
-                        name="country" 
+                      <Form.Control
+                        type="text"
+                        name="country"
                         value={formData.country}
-                        onChange={handleChange} 
-                        required 
+                        onChange={handleChange}
+                        required
                         className="form-control-modern"
                         placeholder="India"
                       />
@@ -181,24 +265,19 @@ const ContactForm = () => {
                     </div>
                   </Form.Group>
 
-                  {/* Admin Credentials */}
-                  {/* <div className="mb-4 p-3 bg-light rounded-3">
-                    <small className="text-muted fw-bold d-flex align-items-center">
-                      <i className="bi bi-shield-check me-2 text-success"></i>
-                      👨‍💼 Admin Login: <code className="ms-2 px-2 py-1 bg-white rounded">sasiraja / 1234567890</code>
-                    </small>
-                  </div> */}
-
                   {/* Submit Button */}
-                  <Button 
-                    variant="primary" 
-                    type="submit" 
+                  <Button
+                    variant="primary"
+                    type="submit"
                     className="w-100 btn-modern-gradient py-3 fs-6 fw-bold mb-0"
                     disabled={loading}
                   >
                     {loading ? (
                       <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        ></span>
                         Processing...
                       </>
                     ) : (

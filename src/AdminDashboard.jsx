@@ -268,3 +268,844 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+
+
+
+
+// import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+// import { useNavigate } from "react-router-dom";
+// import {
+//   Container,
+//   Row,
+//   Col,
+//   Badge,
+//   Form,
+//   InputGroup,
+//   Dropdown,
+//   Card,
+//   Button,
+//   ProgressBar,
+//   OverlayTrigger,
+//   Tooltip,
+// } from "react-bootstrap";
+
+// const AdminDashboard = () => {
+//   const navigate = useNavigate();
+//   const [users, setUsers] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [searchField, setSearchField] = useState("name");
+//   const [statusFilter, setStatusFilter] = useState("all");
+//   const [hoveredCard, setHoveredCard] = useState(null);
+//   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+//   const canvasRef = useRef(null);
+
+//   useEffect(() => {
+//     const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
+//     const realUsers = storedUsers.filter(
+//       (user) => !(user.name === "sasiraja" && user.phone === "1234567890")
+//     );
+//     setUsers(realUsers);
+//   }, []);
+
+//   useEffect(() => {
+//     const canvas = canvasRef.current;
+//     if (!canvas) return;
+
+//     const ctx = canvas.getContext('2d');
+//     let animationId;
+//     const particles = [];
+
+//     const resizeCanvas = () => {
+//       canvas.width = window.innerWidth;
+//       canvas.height = window.innerHeight;
+//     };
+//     resizeCanvas();
+
+//     class Particle {
+//       constructor() {
+//         this.x = Math.random() * canvas.width;
+//         this.y = Math.random() * canvas.height;
+//         this.size = Math.random() * 2 + 1;
+//         this.speedX = Math.random() * 0.5 - 0.25;
+//         this.speedY = Math.random() * 0.5 - 0.25;
+//         this.vx = 0;
+//         this.vy = 0;
+//       }
+      
+//       update() {
+//         const dx = mousePos.x - this.x;
+//         const dy = mousePos.y - this.y;
+//         const distance = Math.sqrt(dx * dx + dy * dy);
+        
+//         if (distance < 100) {
+//           this.vx = (dx / distance) * 2;
+//           this.vy = (dy / distance) * 2;
+//         } else {
+//           this.vx *= 0.95;
+//           this.vy *= 0.95;
+//         }
+        
+//         this.x += this.speedX + this.vx;
+//         this.y += this.speedY + this.vy;
+        
+//         if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+//         if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+//       }
+      
+//       draw() {
+//         ctx.save();
+//         ctx.globalAlpha = 0.6;
+//         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+//         ctx.shadowColor = 'rgba(102, 126, 234, 0.8)';
+//         ctx.shadowBlur = 10;
+//         ctx.beginPath();
+//         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+//         ctx.fill();
+//         ctx.restore();
+//       }
+//     }
+
+//     for (let i = 0; i < 100; i++) {
+//       particles.push(new Particle());
+//     }
+
+//     const animate = () => {
+//       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+//       particles.forEach(particle => {
+//         particle.update();
+//         particle.draw();
+//       });
+      
+//       // Connect nearby particles
+//       for (let i = 0; i < particles.length; i++) {
+//         for (let j = i; j < particles.length; j++) {
+//           const dx = particles[i].x - particles[j].x;
+//           const dy = particles[i].y - particles[j].y;
+//           const distance = Math.sqrt(dx * dx + dy * dy);
+          
+//           if (distance < 80) {
+//             ctx.strokeStyle = `rgba(102, 126, 234, ${1 - distance / 80})`;
+//             ctx.lineWidth = 1;
+//             ctx.shadowBlur = 5;
+//             ctx.shadowColor = 'rgba(102, 126, 234, 0.5)';
+//             ctx.beginPath();
+//             ctx.moveTo(particles[i].x, particles[i].y);
+//             ctx.lineTo(particles[j].x, particles[j].y);
+//             ctx.stroke();
+//           }
+//         }
+//       }
+      
+//       animationId = requestAnimationFrame(animate);
+//     };
+//     animate();
+
+//     const handleMouseMove = (e) => {
+//       setMousePos({ x: e.clientX, y: e.clientY });
+//     };
+
+//     window.addEventListener('mousemove', handleMouseMove);
+//     window.addEventListener('resize', resizeCanvas);
+
+//     return () => {
+//       window.removeEventListener('mousemove', handleMouseMove);
+//       window.removeEventListener('resize', resizeCanvas);
+//       cancelAnimationFrame(animationId);
+//     };
+//   }, [mousePos]);
+
+//   const filteredUsers = useMemo(() => {
+//     return users.filter((user) => {
+//       if (statusFilter !== "all" && user.status !== statusFilter) return false;
+//       const value = user[searchField]?.toLowerCase() || "";
+//       return value.includes(searchTerm.toLowerCase());
+//     });
+//   }, [users, searchTerm, searchField, statusFilter]);
+
+//   const updateStatus = useCallback((userId, newStatus) => {
+//     const updatedUsers = users.map((user) =>
+//       user.id === userId ? { ...user, status: newStatus } : user
+//     );
+//     setUsers(updatedUsers);
+//     localStorage.setItem("users", JSON.stringify(updatedUsers));
+//   }, [users]);
+
+//   const deleteUser = useCallback((userId) => {
+//     if (window.confirm("Delete this user permanently?")) {
+//       const updatedUsers = users.filter((user) => user.id !== userId);
+//       setUsers(updatedUsers);
+//       localStorage.setItem("users", JSON.stringify(updatedUsers));
+//     }
+//   }, [users]);
+
+//   const handleLogout = useCallback(() => {
+//     localStorage.removeItem("adminSession");
+//     navigate("/");
+//   }, [navigate]);
+
+//   const getStatusConfig = (status) => {
+//     const configs = {
+//       approved: { 
+//         gradient: '135deg, #00b09b, #96c93d', 
+//         glow: '#00b09b', 
+//         icon: 'bi-check-circle-fill',
+//         text: 'APPROVED'
+//       },
+//       rejected: { 
+//         gradient: '135deg, #f093fb, #f5576c', 
+//         glow: '#f5576c', 
+//         icon: 'bi-x-circle-fill',
+//         text: 'REJECTED'
+//       },
+//       pending: { 
+//         gradient: '135deg, #667eea, #764ba2', 
+//         glow: '#667eea', 
+//         icon: 'bi-clock-fill',
+//         text: 'PENDING'
+//       }
+//     };
+//     return configs[status] || configs.pending;
+//   };
+
+//   const getStatusCount = (status) => {
+//     return users.filter((u) => 
+//       (status === 'pending' ? (!u.status || u.status === status) : u.status === status)
+//     ).length;
+//   };
+
+//   return (
+//     <>
+//       <canvas 
+//         ref={canvasRef} 
+//         className="particles-canvas"
+//         style={{ position: 'fixed', top: 0, left: 0, zIndex: 0 }}
+//       />
+//       <div className="admin-dashboard-ultimate">
+//         {/* HERO HEADER WITH PARALLAX */}
+//         <div className="hero-header-ultimate">
+//           <div className="hero-overlay"></div>
+//           <div className="hero-content">
+//             <Container>
+//               <Row className="align-items-center">
+//                 <Col lg={8}>
+//                   <div className="hero-text">
+//                     <div className="badge-hero mb-3">ULTIMATE ADMIN v3.0</div>
+//                     <h1 className="hero-title">
+//                       Advanced User<br />
+//                       <span className="gradient-text">Management</span> System
+//                     </h1>
+//                     <p className="hero-subtitle">
+//                       Enterprise-grade dashboard with real-time analytics and intelligent user insights
+//                     </p>
+//                   </div>
+//                 </Col>
+//                 <Col lg={4} className="text-lg-end mt-4 mt-lg-0">
+//                   <div className="stats-metrics">
+//                     <div className="metric-item">
+//                       <span className="metric-number">{users.length}</span>
+//                       <span>Total Users</span>
+//                     </div>
+//                     <div className="metric-item">
+//                       <span className="metric-number success">{getStatusCount('approved')}</span>
+//                       <span>Approved</span>
+//                     </div>
+//                   </div>
+//                 </Col>
+//               </Row>
+//             </Container>
+//           </div>
+//         </div>
+
+//         <Container className="content-wrapper" style={{ position: 'relative', zIndex: 1 }}>
+//           {/* ADVANCED STAT WIDGETS */}
+//           <Row className="mb-6 g-4">
+//             {[
+//               { count: users.length, label: 'Total Users', icon: 'bi-people-fill', type: 'total' },
+//               { count: getStatusCount('pending'), label: 'Pending Review', icon: 'bi-clock-history', type: 'pending' },
+//               { count: getStatusCount('approved'), label: 'Active Users', icon: 'bi-check-circle-fill', type: 'success' },
+//               { count: getStatusCount('rejected'), label: 'Declined', icon: 'bi-x-circle-fill', type: 'danger' },
+//             ].map(({ count, label, icon, type }, index) => (
+//               <Col lg={3} key={index}>
+//                 <div className={`widget-premium ${type} floating-widget`}>
+//                   <div className="widget-inner">
+//                     <div className="widget-icon">
+//                       <i className={`bi ${icon}`}></i>
+//                     </div>
+//                     <div className="widget-content">
+//                       <div className="count-animated" data-target={count}>
+//                         {count.toLocaleString()}
+//                       </div>
+//                       <div className="widget-label">{label}</div>
+//                     </div>
+//                   </div>
+//                   <div className="widget-glow-ring"></div>
+//                 </div>
+//               </Col>
+//             ))}
+//           </Row>
+
+//           {/* COMMAND CENTER */}
+//           <Card className="command-center shadow-4xl mb-6">
+//             <Card.Body className="p-5">
+//               <div className="command-header d-flex justify-content-between align-items-center mb-4">
+//                 <h4 className="command-title">
+//                   <i className="bi bi-command me-2"></i>Command Center
+//                 </h4>
+//                 <div className="command-stats">
+//                   <span className="live-indicator"></span>
+//                   Live: {filteredUsers.length}/{users.length} users
+//                 </div>
+//               </div>
+//               <Row className="g-4 align-items-end">
+//                 <Col md={2}>
+//                   <label className="form-label-ultimate">Status Filter</label>
+//                   <div className="select-wrapper">
+//                     <Form.Select
+//                       value={statusFilter}
+//                       onChange={(e) => setStatusFilter(e.target.value)}
+//                       className="select-ultimate"
+//                     >
+//                       <option value="all">All Status ({users.length})</option>
+//                       <option value="pending">⏳ Pending ({getStatusCount('pending')})</option>
+//                       <option value="approved">✅ Approved ({getStatusCount('approved')})</option>
+//                       <option value="rejected">❌ Rejected ({getStatusCount('rejected')})</option>
+//                     </Form.Select>
+//                   </div>
+//                 </Col>
+//                 <Col md={2}>
+//                   <label className="form-label-ultimate">Search Field</label>
+//                   <div className="select-wrapper">
+//                     <Form.Select
+//                       value={searchField}
+//                       onChange={(e) => setSearchField(e.target.value)}
+//                       className="select-ultimate"
+//                     >
+//                       <option value="name">👤 Name</option>
+//                       <option value="phone">📱 Phone</option>
+//                       <option value="email">✉️ Email</option>
+//                       <option value="place">📍 Location</option>
+//                       <option value="country">🌍 Country</option>
+//                     </Form.Select>
+//                   </div>
+//                 </Col>
+//                 <Col md={6}>
+//                   <label className="form-label-ultimate">Global Search</label>
+//                   <InputGroup className="input-group-ultimate">
+//                     <Form.Control
+//                       type="text"
+//                       placeholder={`Search ${searchField.toUpperCase()} across ${users.length} records...`}
+//                       value={searchTerm}
+//                       onChange={(e) => setSearchTerm(e.target.value)}
+//                       className="input-ultimate"
+//                     />
+//                     {searchTerm && (
+//                       <Button className="clear-btn-ultimate" onClick={() => setSearchTerm("")}>
+//                         <i className="bi bi-x-circle-fill"></i>
+//                       </Button>
+//                     )}
+//                   </InputGroup>
+//                 </Col>
+//                 <Col md={2}>
+//                   <Button className="reset-btn-ultimate w-100" onClick={() => {
+//                     setSearchTerm("");
+//                     setStatusFilter("all");
+//                   }}>
+//                     <i className="bi bi-arrow-repeat me-2"></i>Reset All
+//                   </Button>
+//                 </Col>
+//               </Row>
+//               <div className="metrics-footer mt-4 pt-4">
+//                 <div className="progress-metrics">
+//                   <ProgressBar 
+//                     now={(getStatusCount('approved')/users.length)*100 || 0}
+//                     className="progress-ultimate"
+//                     label={`Approval Rate: ${Math.round((getStatusCount('approved')/users.length)*100)}%`}
+//                   />
+//                 </div>
+//               </div>
+//             </Card.Body>
+//           </Card>
+
+//           {/* ULTIMATE USER CARDS */}
+//           {filteredUsers.length === 0 ? (
+//             <div className="empty-state-ultimate text-center py-8">
+//               <div className="empty-icon">
+//                 <i className="bi bi-people-fill"></i>
+//               </div>
+//               <h3 className="empty-title">No Users Found</h3>
+//               <p className="empty-subtitle">Try adjusting your filters or search terms</p>
+//               <Button className="empty-action-btn" onClick={() => {
+//                 setSearchTerm("");
+//                 setStatusFilter("all");
+//               }}>
+//                 Clear Filters & Search
+//               </Button>
+//             </div>
+//           ) : (
+//             <Row className="g-5 user-grid-ultimate">
+//               {filteredUsers.map((user) => {
+//                 const statusConfig = getStatusConfig(user.status || 'pending');
+//                 return (
+//                   <Col lg={6} xl={4} xxl={3} key={user.id}>
+//                     <div 
+//                       className={`user-card-ultimate-wrapper ${hoveredCard === user.id ? 'elevated' : ''}`}
+//                       onMouseEnter={() => setHoveredCard(user.id)}
+//                       onMouseLeave={() => setHoveredCard(null)}
+//                     >
+//                       <Card className={`user-card-ultimate ${user.status || 'pending'}`}>
+//                         <div className="card-shine"></div>
+//                         <Card.Header className="header-gradient" style={{
+//                           background: `linear-gradient(${statusConfig.gradient})`
+//                         }}>
+//                           <div className="user-header-content">
+//                             <div className="avatar-premium">
+//                               <i className="bi bi-person-circle"></i>
+//                               <div className="avatar-glow"></div>
+//                             </div>
+//                             <div className="user-header-text">
+//                               <h5>{user.name}</h5>
+//                               <div className="user-meta">{user.email}</div>
+//                             </div>
+//                           </div>
+//                           <div className={`status-badge-ultimate ${user.status || 'pending'}`}>
+//                             <i className={statusConfig.icon}></i>
+//                             {statusConfig.text}
+//                           </div>
+//                         </Card.Header>
+
+//                         <Card.Body className="body-neomorphic">
+//                           <div className="info-matrix">
+//                             <div className="info-row">
+//                               <div className="info-cell">
+//                                 <i className="bi bi-telephone-fill"></i>
+//                                 <span>{user.phone}</span>
+//                               </div>
+//                               <div className="info-cell">
+//                                 <i className="bi bi-geo-alt-fill"></i>
+//                                 <span>{user.place}</span>
+//                               </div>
+//                             </div>
+//                             <div className="info-row">
+//                               <div className="info-cell">
+//                                 <i className="bi bi-globe2"></i>
+//                                 <span>{user.country}</span>
+//                               </div>
+//                               <div className="info-cell">
+//                                 <i className="bi bi-calendar-check-fill"></i>
+//                                 <span>{user.timestamp}</span>
+//                               </div>
+//                             </div>
+//                           </div>
+//                         </Card.Body>
+
+//                         <Card.Footer className="footer-controls">
+//                           <div className="control-group">
+//                             <select
+//                               className="status-switcher"
+//                               value={user.status || "pending"}
+//                               onChange={(e) => updateStatus(user.id, e.target.value)}
+//                             >
+//                               <option value="pending">⏳ Pending</option>
+//                               <option value="approved">✅ Approved</option>
+//                               <option value="rejected">❌ Rejected</option>
+//                             </select>
+//                             <Button
+//                               className="delete-btn-ultimate"
+//                               onClick={() => deleteUser(user.id)}
+//                             >
+//                               <i className="bi bi-trash3-fill"></i>
+//                             </Button>
+//                           </div>
+//                         </Card.Footer>
+//                       </Card>
+//                     </div>
+//                   </Col>
+//                 );
+//               })}
+//             </Row>
+//           )}
+//         </Container>
+//       </div>
+
+//       <style jsx>{`
+//         :global(.admin-dashboard-ultimate) {
+//           min-height: 100vh;
+//           font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+//           overflow-x: hidden;
+//         }
+
+//         /* PARTICLE SYSTEM */
+//         :global(.particles-canvas) {
+//           pointer-events: none;
+//         }
+
+//         /* HERO HEADER */
+//         :global(.hero-header-ultimate) {
+//           position: relative;
+//           height: 400px;
+//           display: flex;
+//           align-items: center;
+//           background: linear-gradient(135deg, #0f0f23 0%, #2d1b69 50%, #667eea 100%);
+//           overflow: hidden;
+//         }
+
+//         :global(.hero-overlay) {
+//           position: absolute;
+//           top: 0;
+//           left: 0;
+//           right: 0;
+//           bottom: 0;
+//           background: 
+//             radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3) 0%, transparent 50%),
+//             radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+//             radial-gradient(circle at 40% 40%, rgba(120,219,255,0.2) 0%, transparent 50%);
+//           animation: heroFloat 20s ease-in-out infinite;
+//         }
+
+//         @keyframes heroFloat {
+//           0%, 100% { transform: translateY(0px) rotate(0deg); }
+//           33% { transform: translateY(-30px) rotate(1deg); }
+//           66% { transform: translateY(-10px) rotate(-1deg); }
+//         }
+
+//         :global(.hero-title) {
+//           font-size: clamp(2.5rem, 5vw, 4.5rem);
+//           font-weight: 900;
+//           background: linear-gradient(135deg, #fff, rgba(255,255,255,0.8));
+//           -webkit-background-clip: text;
+//           -webkit-text-fill-color: transparent;
+//           background-clip: text;
+//           line-height: 1.1;
+//           margin-bottom: 1.5rem;
+//         }
+
+//         :global(.badge-hero) {
+//           display: inline-flex;
+//           padding: 8px 20px;
+//           background: linear-gradient(135deg, #667eea, #764ba2);
+//           color: white;
+//           border-radius: 50px;
+//           font-weight: 700;
+//           font-size: 0.85rem;
+//           box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+//         }
+
+//         /* WIDGETS */
+//         :global(.widget-premium) {
+//           position: relative;
+//           height: 160px;
+//           border-radius: 28px;
+//           padding: 2.5rem 2rem;
+//           cursor: pointer;
+//           transition: all 0.6s cubic-bezier(0.23,1,0.32,1);
+//           overflow: hidden;
+//         }
+
+//         :global(.floating-widget) {
+//           background: rgba(255,255,255,0.1);
+//           backdrop-filter: blur(30px);
+//           border: 1px solid rgba(255,255,255,0.2);
+//         }
+
+//         :global(.floating-widget::before) {
+//           content: '';
+//           position: absolute;
+//           top: 0;
+//           left: 0;
+//           right: 0;
+//           height: 1px;
+//           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+//         }
+
+//         :global(.widget-premium.total:hover) { background: rgba(102,126,234,0.3); }
+//         :global(.widget-premium.pending:hover) { background: rgba(255,193,7,0.3); }
+//         :global(.widget-premium.success:hover) { background: rgba(40,167,69,0.3); }
+//         :global(.widget-premium.danger:hover) { background: rgba(220,53,69,0.3); }
+
+//         :global(.widget-premium:hover) {
+//           transform: translateY(-15px) scale(1.03);
+//           box-shadow: 0 40px 100px rgba(0,0,0,0.4);
+//         }
+
+//         :global(.widget-icon i) {
+//           font-size: 2.5rem;
+//           color: white;
+//           filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+//         }
+
+//         :global(.count-animated) {
+//           font-size: 3rem;
+//           font-weight: 900;
+//           background: linear-gradient(135deg, #fff, rgba(255,255,255,0.8));
+//           -webkit-background-clip: text;
+//           -webkit-text-fill-color: transparent;
+//           line-height: 1;
+//         }
+
+//         /* COMMAND CENTER */
+//         :global(.command-center) {
+//           border-radius: 32px !important;
+//           border: none !important;
+//           background: rgba(255,255,255,0.95) !important;
+//           backdrop-filter: blur(40px) !important;
+//           box-shadow: 
+//             0 50px 100px rgba(0,0,0,0.25),
+//             inset 0 1px 0 rgba(255,255,255,0.8) !important;
+//         }
+
+//         :global(.live-indicator) {
+//           display: inline-block;
+//           width: 12px;
+//           height: 12px;
+//           background: #00ff88;
+//           border-radius: 50%;
+//           animation: pulse 2s infinite;
+//           margin-right: 8px;
+//         }
+
+//         @keyframes pulse {
+//           0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.7); }
+//           70% { box-shadow: 0 0 0 10px rgba(0,255,136,0); }
+//           100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+//         }
+
+//         /* USER CARDS ULTIMATE */
+//         :global(.user-card-ultimate-wrapper) {
+//           perspective: 1000px;
+//         }
+
+//         :global(.user-card-ultimate) {
+//           height: 100%;
+//           border-radius: 32px;
+//           border: none;
+//           background: rgba(255,255,255,0.95);
+//           backdrop-filter: blur(40px);
+//           box-shadow: 
+//             0 35px 80px rgba(0,0,0,0.25),
+//             inset 0 1px 0 rgba(255,255,255,0.8);
+//           transition: all 0.7s cubic-bezier(0.23,1,0.32,1);
+//           position: relative;
+//           overflow: hidden;
+//         }
+
+//         :global(.user-card-ultimate-wrapper.elevated .user-card-ultimate) {
+//           transform: translateY(-25px) rotateX(5deg) scale(1.02);
+//           box-shadow: 0 60px 150px rgba(0,0,0,0.4);
+//           z-index: 20;
+//         }
+
+//         :global(.card-shine) {
+//           position: absolute;
+//           top: -100%;
+//           left: -100%;
+//           width: 200%;
+//           height: 200%;
+//           background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.4), transparent 70%);
+//           transition: all 0.6s ease;
+//         }
+
+//         :global(.user-card-ultimate-wrapper:hover .card-shine) {
+//           top: -50%;
+//           left: -50%;
+//         }
+
+//         :global(.header-gradient) {
+//           padding: 2rem;
+//           border-radius: 32px 32px 0 0;
+//           position: relative;
+//           overflow: hidden;
+//         }
+
+//         :global(.avatar-premium) {
+//           position: relative;
+//           width: 64px;
+//           height: 64px;
+//           margin-right: 1.5rem;
+//         }
+
+//         :global(.avatar-premium i) {
+//           font-size: 2.2rem;
+//           color: white;
+//         }
+
+//         :global(.avatar-glow) {
+//           position: absolute;
+//           top: -8px;
+//           left: -8px;
+//           right: -8px;
+//           bottom: -8px;
+//           background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+//           border-radius: 50%;
+//           z-index: -1;
+//           animation: avatarPulse 3s infinite;
+//         }
+
+//         @keyframes avatarPulse {
+//           0%, 100% { opacity: 0.7; transform: scale(1); }
+//           50% { opacity: 1; transform: scale(1.05); }
+//         }
+
+//         /* INFO MATRIX */
+//         :global(.info-matrix) {
+//           padding: 2rem;
+//         }
+
+//         :global(.info-row) {
+//           display: flex;
+//           gap: 1.5rem;
+//           margin-bottom: 1.5rem;
+//         }
+
+//         :global(.info-row:last-child) {
+//           margin-bottom: 0;
+//         }
+
+//         :global(.info-cell) {
+//           flex: 1;
+//           display: flex;
+//           align-items: center;
+//           gap: 1rem;
+//           padding: 1.5rem;
+//           background: rgba(255,255,255,0.5);
+//           border-radius: 20px;
+//           transition: all 0.4s ease;
+//           border: 1px solid rgba(255,255,255,0.3);
+//         }
+
+//         :global(.info-cell:hover) {
+//           background: rgba(255,255,255,0.8);
+//           transform: translateY(-5px);
+//           box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+//         }
+
+//         :global(.info-cell i) {
+//           font-size: 1.5rem;
+//           color: #667eea;
+//           width: 40px;
+//           text-align: center;
+//         }
+
+//         :global(.info-cell span) {
+//           font-weight: 700;
+//           font-size: 1rem;
+//           color: #2c3e50;
+//         }
+
+//         /* STATUS BADGE ULTIMATE */
+//         :global(.status-badge-ultimate) {
+//           padding: 12px 24px;
+//           border-radius: 50px;
+//           font-weight: 800;
+//           font-size: 0.85rem;
+//           text-transform: uppercase;
+//           letter-spacing: 1px;
+//           box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+//           backdrop-filter: blur(15px);
+//           border: 2px solid rgba(255,255,255,0.4);
+//           display: flex;
+//           align-items: center;
+//           gap: 8px;
+//         }
+
+//         /* FOOTER CONTROLS */
+//         :global(.footer-controls) {
+//           padding: 2rem;
+//           background: rgba(255,255,255,0.5);
+//           border-top: 1px solid rgba(255,255,255,0.4);
+//           backdrop-filter: blur(15px);
+//           border-radius: 0 0 32px 32px;
+//         }
+
+//         :global(.control-group) {
+//           display: flex;
+//           gap: 1.5rem;
+//           align-items: center;
+//         }
+
+//         :global(.status-switcher) {
+//           flex: 1;
+//           padding: 16px 20px;
+//           border: 2px solid rgba(102,126,234,0.3);
+//           border-radius: 20px;
+//           font-weight: 700;
+//           background: rgba(255,255,255,0.8);
+//           transition: all 0.4s ease;
+//           appearance: none;
+//         }
+
+//         :global(.status-switcher:focus) {
+//           border-color: #667eea;
+//           box-shadow: 0 0 0 4px rgba(102,126,234,0.2);
+//           transform: translateY(-3px);
+//         }
+
+//         :global(.delete-btn-ultimate) {
+//           width: 60px;
+//           height: 60px;
+//           border-radius: 20px;
+//           background: rgba(220,53,69,0.2) !important;
+//           border: none !important;
+//           color: #dc3545 !important;
+//           font-size: 1.4rem;
+//           transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+//         }
+
+//         :global(.delete-btn-ultimate:hover) {
+//           background: rgba(220,53,69,0.4) !important;
+//           transform: translateY(-8px) scale(1.1) !important;
+//           box-shadow: 0 25px 50px rgba(220,53,69,0.4) !important;
+//         }
+
+//         /* RESPONSIVE PERFECTION */
+//         @media (max-width: 992px) {
+//           :global(.info-row) { flex-direction: column; }
+//           :global(.control-group) { flex-direction: column; }
+//           :global(.hero-header-ultimate) { height: 300px; }
+//         }
+
+//         @media (max-width: 768px) {
+//           :global(.hero-title) { font-size: 2.5rem !important; }
+//           :global(.user-grid-ultimate) { g-3 !important; }
+//         }
+
+//         /* UTILITY CLASSES */
+//         :global(.shadow-4xl) {
+//           box-shadow: 0 50px 100px rgba(0,0,0,0.25) !important;
+//         }
+
+//         :global(.select-wrapper) {
+//           position: relative;
+//         }
+
+//         :global(.select-ultimate) {
+//           padding: 16px 20px;
+//           border: 2px solid rgba(102,126,234,0.3);
+//           border-radius: 20px;
+//           background: rgba(255,255,255,0.9);
+//           font-weight: 700;
+//           transition: all 0.4s ease;
+//         }
+
+//         :global(.input-ultimate) {
+//           padding: 16px 20px;
+//           border: 2px solid rgba(102,126,234,0.3);
+//           border-radius: 20px;
+//           background: rgba(255,255,255,0.9);
+//           font-weight: 600;
+//           transition: all 0.4s ease;
+//         }
+
+//         :global(.progress-ultimate) {
+//           height: 40px;
+//           border-radius: 25px;
+//           background: rgba(255,255,255,0.3);
+//           backdrop-filter: blur(10px);
+//         }
+//       `}</style>
+//     </>
+//   );
+// };
+
+// export default AdminDashboard;
