@@ -18,7 +18,7 @@ const ADMIN_CREDENTIALS = {
   country: "india",
 };
 
-const WHATSAPP_NUMBER = "9500941142";
+const WHATSAPP_NUMBER = "+919500941142";
 
 const ContactForm = () => {
   const navigate = useNavigate();
