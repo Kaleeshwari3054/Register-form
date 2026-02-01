@@ -8,11 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-     "start": "serve -s dist -l $PORT"
+    "start": "serve -s dist -l $PORT"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "bootstrap": "^5.3.8",
+    "firebase": "^12.8.0",
     "react": "^19.2.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.0",
