@@ -293,9 +293,9 @@ const Adminpage = () => {
               <div className="bg-white rounded-4 shadow-xl overflow-hidden border-0">
                 <div className="p-4 bg-gradient-primary text-white">
                   <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h5 className="mb-0 fw-bold">
+                    <h5 className="mb-0 fw-bold" style={{ color: 'black' }}>
                       <i className="bi bi-people-fill me-2"></i>
-                      Firebase Registrations ({filteredUsers.length})
+                      Users Registrations ({filteredUsers.length})
                     </h5>
                     <div className="d-flex gap-2 flex-wrap">
                       <Badge bg="warning" text-dark className="px-3 py-2">
