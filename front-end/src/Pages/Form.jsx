@@ -50,7 +50,7 @@ const ContactForm = () => {
     place: formData.place,
     country: formData.country,
     timestamp: new Date().toLocaleString(),
-    // NO id field - backend handles it
+    // NO id field - backend handles it 
   };
 
   try {
@@ -79,12 +79,13 @@ const ContactForm = () => {
     }
 
     // ✅ REGULAR USER - Save to database + WhatsApp
-    const whatsappMessage = `New Registration!\n\nName: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nPlace: ${formData.place}\nCountry: ${formData.country}`;
+    // const whatsappMessage = `New Registration!\n\nName: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nPlace: ${formData.place}\nCountry: ${formData.country}`;
+      const whatsappMessage = `I'm interested in the 2026 offer. How do I enroll?`;
     const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
 
     setStatus({
       type: "success",
-      message: "✅ Saved to database! Opening WhatsApp...",
+      message: "✅ Registration successfully!",
     });
     setTimeout(() => {
       window.open(whatsappURL, "_blank");
