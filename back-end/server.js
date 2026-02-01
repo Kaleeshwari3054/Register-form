@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGODB_URI);
-        console.log('✅ MongoDB Atlas connected');
+        console.log('✅ MongoDB Atlas connecteddd');
     } catch (err) {
         console.error('❌ MongoDB connection failed:', err);
         process.exit(1);
