@@ -14,7 +14,15 @@ import {
   Modal,
   DropdownButton,
 } from "react-bootstrap";
-// import "./Adminpage.css";
+import { db } from "../firebase/firebase-config";
+import { 
+  collection, 
+  onSnapshot, 
+  doc, 
+  updateDoc, 
+  deleteDoc,
+  addDoc 
+} from "firebase/firestore";
 
 const Adminpage = () => {
   const navigate = useNavigate();
@@ -24,58 +32,47 @@ const Adminpage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch users from MongoDB Atlas API
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/users');
-      const data = await response.json();
-      // Ensure status exists (default to "pending")
-      const usersWithStatus = data.map((user) => ({
-        ...user,
-        status: user.status || "pending",
-      }));
-      setUsers(usersWithStatus);
-    } catch (err) {
-      console.error('Fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // 🔥 FIREBASE REALTIME DATA FETCHING
   useEffect(() => {
-    fetchUsers();
+    const unsubscribe = onSnapshot(collection(db, "registrations"), (snapshot) => {
+      const usersData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        status: doc.data().status || "pending", // Default status
+      }));
+      setUsers(usersData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe(); // Cleanup listener
   }, []);
 
-  // Update status via API
+  // Update user status in Firebase
   const updateUserStatus = async (userId, newStatus) => {
     try {
-      await fetch(`/api/users/${userId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+      await updateDoc(doc(db, "registrations", userId), {
+        status: newStatus,
+        statusUpdatedAt: new Date().toISOString(),
       });
-      // Refresh from server
-      fetchUsers();
+      // Data updates automatically via onSnapshot
     } catch (err) {
       console.error('Update error:', err);
+      alert('Failed to update status');
     }
   };
 
-  // Delete user via API
+  // Delete user from Firebase
   const deleteUser = async () => {
-    if (userToDelete) {
+    if (userToDelete?.id) {
       try {
-        await fetch(`/api/users/${userToDelete.id}`, {
-          method: 'DELETE',
-        });
+        await deleteDoc(doc(db, "registrations", userToDelete.id));
         setShowDeleteModal(false);
         setUserToDelete(null);
-        fetchUsers();
       } catch (err) {
         console.error('Delete error:', err);
+        alert('Failed to delete user');
       }
     }
   };
@@ -129,7 +126,7 @@ const Adminpage = () => {
       <div className="min-vh-100 bg-light d-flex justify-content-center align-items-center">
         <div className="text-center">
           <div className="spinner-border text-primary mb-3" role="status"></div>
-          <h4>Loading registrations...</h4>
+          <h4>Loading registrations from Firebase...</h4>
         </div>
       </div>
     );
@@ -144,13 +141,13 @@ const Adminpage = () => {
             <div className="d-flex justify-content-between align-items-center mb-4 bg-white p-4 rounded-4 shadow-lg">
               <h2 className="text-dark mb-0 fw-bold">
                 <i className="bi bi-shield-check me-2 text-primary"></i>
-                Admin Dashboard
+                Admin Dashboard (Firebase)
               </h2>
               <div className="d-flex gap-2">
                 <Button
                   variant="success"
-                  onClick={fetchUsers}
                   className="px-4 py-2 fs-6 fw-bold"
+                  onClick={() => window.location.reload()}
                 >
                   <i className="bi bi-arrow-clockwise me-2"></i>Refresh
                 </Button>
@@ -174,7 +171,7 @@ const Adminpage = () => {
                     </div>
                     <div>
                       <h5 className="mb-1 fw-bold text-primary">{users.length}</h5>
-                      <small className="text-muted">Total Users</small>
+                      <small className="text-muted">Total Registrations</small>
                     </div>
                   </div>
                 </div>
@@ -220,7 +217,7 @@ const Adminpage = () => {
               </Col>
             </Row>
 
-            {/* Filters & Search */}
+            {/* Filters & Search - SAME AS BEFORE */}
             <div className="bg-white p-4 rounded-4 shadow-lg mb-4">
               <Row className="align-items-end g-3">
                 <Col md={3}>
@@ -274,7 +271,7 @@ const Adminpage = () => {
               </Alert>
             </div>
 
-            {/* Users Table */}
+            {/* Users Table - SAME UI, FIREBASE DATA */}
             {filteredUsers.length === 0 ? (
               <Alert
                 variant="warning"
@@ -287,7 +284,7 @@ const Adminpage = () => {
                     <p className="mb-0">
                       {searchTerm || statusFilter !== "all"
                         ? `No users match current filters.`
-                        : "No registrations yet."}
+                        : "No registrations yet. Submit from ContactForm!"}
                     </p>
                   </div>
                 </div>
@@ -298,7 +295,7 @@ const Adminpage = () => {
                   <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h5 className="mb-0 fw-bold">
                       <i className="bi bi-people-fill me-2"></i>
-                      Registered Users ({filteredUsers.length})
+                      Firebase Registrations ({filteredUsers.length})
                     </h5>
                     <div className="d-flex gap-2 flex-wrap">
                       <Badge bg="warning" text-dark className="px-3 py-2">

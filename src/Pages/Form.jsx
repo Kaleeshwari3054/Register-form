@@ -9,6 +9,8 @@ import {
   Alert,
   Card,
 } from "react-bootstrap";
+import { db } from "../firebase/firebase-config"; // Your Firebase config
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const ADMIN_CREDENTIALS = {
   name: "Sreesoftwares",
@@ -29,132 +31,75 @@ const ContactForm = () => {
     place: "",
     country: "",
   });
-  const [status, setStatus] = useState({ type: "", message:"" });
+  const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setStatus({ type: "", message: "" });
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ type: "", message: "" });
 
-  // ✅ REMOVED id - Backend generates it!
-  const submitData = {
-    name: formData.name,
-    phone: formData.phone,
-    email: formData.email,
-    place: formData.place,
-    country: formData.country,
-    timestamp: new Date().toLocaleString(),
-    // NO id field - backend handles it
-  };
+    const submitData = {
+      name: formData.name,
+      phone: formData.phone,
+      email: formData.email,
+      place: formData.place,
+      country: formData.country,
+      timestamp: serverTimestamp(), // Firebase server timestamp
+    };
 
-  try {
-    const response = await fetch("http://localhost:5000/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submitData),
-    });
+    try {
+      // 🔥 ADMIN LOGIN - Skip database save, direct redirect
+      if (
+        formData.name === ADMIN_CREDENTIALS.name &&
+        formData.phone === ADMIN_CREDENTIALS.phone
+      ) {
+        setStatus({
+          type: "success",
+          message: "🔐 Admin login successful! Redirecting...",
+        });
+        setTimeout(() => navigate("/admin-dashboard"), 1500);
+        setLoading(false);
+        return;
+      }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Save failed");
-    }
+      // ✅ REGULAR USER - Save to Firebase + WhatsApp
+      await addDoc(collection(db, "registrations"), submitData);
 
-    // ✅ ADMIN LOGIN - Does NOT save to database
-    if (
-      formData.name === ADMIN_CREDENTIALS.name &&
-      formData.phone === ADMIN_CREDENTIALS.phone
-    ) {
+      const whatsappMessage = `I'm interested in the 2026 offer. How do I enroll?`;
+      const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
+
       setStatus({
         type: "success",
-        message: "🔐 Admin login successful! Redirecting...",
+        message: "✅ Registration successful! Check WhatsApp.",
       });
-      setTimeout(() => navigate("/admin-dashboard"), 1500);
-      return; // Exit early - NO database save for admin
+
+      setTimeout(() => {
+        window.open(whatsappURL, "_blank");
+        // Reset form after success
+        setFormData({
+          name: "",
+          phone: "",
+          email: "",
+          place: "",
+          country: "",
+        });
+      }, 1500);
+
+    } catch (err) {
+      console.error("Firebase Error:", err);
+      setStatus({
+        type: "danger",
+        message: `❌ ${err.message || "Registration failed. Please try again."}`,
+      });
+    } finally {
+      setLoading(false);
     }
-
-    // ✅ REGULAR USER - Save to database + WhatsApp
-    const whatsappMessage = `New Registration!\n\nName: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nPlace: ${formData.place}\nCountry: ${formData.country}`;
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
-
-    setStatus({
-      type: "success",
-      message: "✅ Saved to database! Opening WhatsApp...",
-    });
-    setTimeout(() => {
-      window.open(whatsappURL, "_blank");
-    }, 1500);
-
-  } catch (err) {
-    setStatus({
-      type: "danger",
-      message: `❌ ${err.message}`,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setStatus({ type: "", message: "" });
-
-//     const submitData = {
-//       ...formData,
-//       id: Date.now(),
-//       timestamp: new Date().toLocaleString(),
-//     };
-
-//     try {
-//       const response = await fetch("http://localhost:5000/api/register", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(submitData),
-//       });
-
-//       if (!response.ok) {
-//         throw new Error("Save failed");
-//       }
-
-//       // Check admin login
-//       if (
-//         formData.name === ADMIN_CREDENTIALS.name &&
-//         formData.phone === ADMIN_CREDENTIALS.phone
-//       ) {
-//         setStatus({
-//           type: "success",
-//           message: "Admin login successful! Redirecting...",
-//         });
-//         setTimeout(() => navigate("/admin-dashboard"), 1500);
-//       } else {
-//         // WhatsApp for regular users
-//         const whatsappMessage = `New Registration!\n\nName: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nPlace: ${formData.place}\nCountry: ${formData.country}`;
-//         const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
-
-//         setStatus({
-//           type: "success",
-//           message: "✅ Registration Successfullly!",
-//         });
-//         setTimeout(() => {
-//           window.open(whatsappURL, "_blank");
-//         }, 1500);
-//       }
-//     } catch (err) {
-//       setStatus({
-//         type: "danger",
-//         message: "❌ Failed to save. Check backend connection.",
-//       });
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+  };
 
   return (
     <div className="min-vh-100 bg-gradient-form">
@@ -301,7 +246,7 @@ const ContactForm = () => {
                           className="spinner-border spinner-border-sm me-2"
                           role="status"
                         ></span>
-                        Saving to Database...
+                        Saving to Firebase...
                       </>
                     ) : (
                       <>
