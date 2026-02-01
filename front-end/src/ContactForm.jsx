@@ -83,42 +83,6 @@ const ContactForm = () => {
     }
   };
 
-  //   const navigate = useNavigate();
-  //   const [formData, setFormData] = useState({
-  //     name: '', phone: '', email: '', place: '', country: ''
-  //   });
-  //   const [status, setStatus] = useState({ type: '', message: '' });
-  //   const [loading, setLoading] = useState(false);
-
-  //   const handleChange = (e) => {
-  //     setFormData({ ...formData, [e.target.name]: e.target.value });
-  //   };
-
-  //   const handleSubmit = async (e) => {
-  //     e.preventDefault();
-  //     setLoading(true);
-
-  //     // Add new user to local storage
-  //     const users = JSON.parse(localStorage.getItem('users')) || [];
-  //     const newUser = { ...formData, id: Date.now(), timestamp: new Date().toLocaleString() };
-  //     users.unshift(newUser);
-  //     localStorage.setItem('users', JSON.stringify(users));
-
-  //     // Check if admin login
-  //     if (formData.name === ADMIN_CREDENTIALS.name &&
-  //         formData.phone === ADMIN_CREDENTIALS.phone) {
-  //       setTimeout(() => {
-  //         setStatus({ type: 'success', message: 'Admin login successful! Redirecting...' });
-  //         setTimeout(() => navigate('/admin-dashboard'), 1500);
-  //       }, 1000);
-  //     } else {
-  //       setTimeout(() => {
-  //         setStatus({ type: 'success', message: 'Registration successful! Admin will contact you.' });
-  //         setFormData({ name: '', phone: '', email: '', place: '', country: '' });
-  //         setLoading(false);
-  //       }, 1500);
-  //     }
-  //   };
 
   return (
     <div className="min-vh-100 bg-gradient-form">
